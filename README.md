@@ -76,7 +76,7 @@ claude mcp add gmail-calendar --scope local --transport stdio --env GOOGLE_PRIVA
 ## Prompts used (2026-11-24)
 
 Prompts are quoted as written, except that a third party's email address is
-replaced with `[email]` and prompt 20 is summarized. The Gmail and Calendar work in prompts 7-11, 16 and 17
+replaced with `[email]`. The note in parentheses in prompt 21 was added later. The Gmail and Calendar work in prompts 7-11, 16 and 17
 used the claude.ai connectors, not this server.
 
 1. In one sentence: which folder are you working in, and is it empty?
@@ -110,6 +110,30 @@ used the claude.ai connectors, not this server.
 17. Act as my meeting coordinator. Find the latest meeting request in my email. Check my calendar for that time. If I am free, create the event and prepare a reply draft confirming it. If I am busy, do not create an event; prepare a reply draft that suggests two free times. Never send anything. Show me what you did, step by step.
 18. Create reflection.md with four empty sections: "What did we ask the agent?", "How did we check that the result is correct?", "Which tool did we leave out, and why?", "L05 vs L06: what changed?". Also add to README.md the list of prompts we used today. Then commit.
 19. push to git
-20. (Summary) Act as a strict Red Team Auditor and University Course Grader: audit the workspace, git history and GitHub repository, and grade them against the L06 rubric.
+20. The audit prompt (it was cut off at the end when pasted):
+
+    ```text
+    Act as a strict Red Team Auditor and University Course Grader (bodek barerani) evaluating this L06 MCP server submission (`gmail-calendar` MCP server).
+
+    Perform a comprehensive, zero-mercy audit of the entire workspace (`~/AI-Course/L06`), git history, and remote GitHub repository. Grade the submission out of 100 based on the exact L06 lab rubric:
+
+    1. **Security & Secrets Hygiene (25 points):**
+       - Run `git status`, `git log --all --full-history --stat`, and scan every tracked/committed file (including `README.md`, `server.py`, `test_server.py`, `.gitignore`) for leaked credentials, `token.json`, `client_secret*.json`, `credentials.json`, `.env`, API keys, or sensitive personal paths/emails.
+       - Verify `.gitignore` blocks all secret patterns and `C:\my-private` is completely isolated.
+       - Verify strict least-privilege tool design: confirm NO destructive/irreversible tools (`send_email`, `delete_event`, `delete_message`, `modify_event`) exist in `server.py`, and confirm the server only exposes safe read/draft/create tools (`search_emails`, `get_email`, `create_draft`, `list_events`, `find_free_slots`, `create_event`).
+
+    2. **Server Architecture & Code Quality (25 points):**
+       - Inspect `server.py` and `pyproject.toml`. Verify FastMCP implementation, clean error handling, proper loading of Google OAuth credentials from `C:\my-private`, and absence of hardcoded paths that break portability if env vars/config are expected.
+       - Run the test suite (`uv run pytest` or `python test_server.py`) and verify all unit/mock tests pass without errors.
+
+    3. **Documentation (`README.md`) (20 points):**
+       - Verify `README.md` is clear, well-structured, includes setup instructions, explains the tools exposed by the MCP server, and contains the complete list of prompts used during the lab (Step 14 requirement).
+
+    4. **Reflection (`reflection.md`) (20 points):**
+       - Inspect `reflection.md`. Verify all four required sections exist:
+    ```
+
 21. do 3 and 4, then commit and push (meaning: commit mock tests with pytest; clean up hardcoded paths, `.gitignore` and the README)
 22. fill in reflection.md, then commit and push
+23. run the audit again and give me the new grade
+24. add the missing prompts to README, commit and push
