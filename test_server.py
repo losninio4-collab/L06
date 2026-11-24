@@ -20,10 +20,13 @@ EXPECTED = {
 
 
 async def main() -> bool:
+    if not os.environ.get("GOOGLE_PRIVATE_DIR"):
+        print("Set GOOGLE_PRIVATE_DIR first (see README.md).")
+        return False
     params = StdioServerParameters(
         command="uv",
         args=["run", "--directory", str(PROJECT), "server.py"],
-        env={**os.environ, "GOOGLE_PRIVATE_DIR": r"C:\my-private"},
+        env=dict(os.environ),
     )
     async with stdio_client(params) as (read, write):
         async with ClientSession(read, write) as session:

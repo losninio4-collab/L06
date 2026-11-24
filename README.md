@@ -36,16 +36,34 @@ In PowerShell, from this folder:
 
 ```powershell
 uv sync
-$env:GOOGLE_PRIVATE_DIR = "C:\my-private"
+$env:GOOGLE_PRIVATE_DIR = "<private folder>"
 uv run server.py
 ```
 
 The server waits silently for an MCP client. Press Ctrl+C to stop.
 
-## Add to Claude Code
+## Test
+
+Offline unit tests (Google is mocked; no account or secrets needed):
 
 ```powershell
-claude mcp add gmail-calendar --scope local --transport stdio --env GOOGLE_PRIVATE_DIR=C:\my-private '--' uv run --directory C:\Users\Elnin\AI-Course\L06 server.py
+uv run pytest
+```
+
+Live test. It needs the real Google files, makes a read-only `list_events` call,
+and prints your event details, so check the output before sharing it:
+
+```powershell
+$env:GOOGLE_PRIVATE_DIR = "<private folder>"
+uv run test_server.py
+```
+
+## Add to Claude Code
+
+Run this from the project folder, replacing `<private folder>`:
+
+```powershell
+claude mcp add gmail-calendar --scope local --transport stdio --env GOOGLE_PRIVATE_DIR=<private folder> '--' uv run --directory $PWD server.py
 ```
 
 ## Security
@@ -58,7 +76,7 @@ claude mcp add gmail-calendar --scope local --transport stdio --env GOOGLE_PRIVA
 ## Prompts used (2026-11-24)
 
 Prompts are quoted as written, except that a third party's email address is
-replaced with `[email]`. The Gmail and Calendar work in prompts 7-11, 16 and 17
+replaced with `[email]` and prompt 20 is summarized. The Gmail and Calendar work in prompts 7-11, 16 and 17
 used the claude.ai connectors, not this server.
 
 1. In one sentence: which folder are you working in, and is it empty?
@@ -91,3 +109,6 @@ used the claude.ai connectors, not this server.
 16. Hi, can we meet next Tuesday at 10:00 for 45 minutes about the volunteers schedule? - Dana
 17. Act as my meeting coordinator. Find the latest meeting request in my email. Check my calendar for that time. If I am free, create the event and prepare a reply draft confirming it. If I am busy, do not create an event; prepare a reply draft that suggests two free times. Never send anything. Show me what you did, step by step.
 18. Create reflection.md with four empty sections: "What did we ask the agent?", "How did we check that the result is correct?", "Which tool did we leave out, and why?", "L05 vs L06: what changed?". Also add to README.md the list of prompts we used today. Then commit.
+19. push to git
+20. (Summary) Act as a strict Red Team Auditor and University Course Grader: audit the workspace, git history and GitHub repository, and grade them against the L06 rubric.
+21. do 3 and 4, then commit and push (meaning: commit mock tests with pytest; clean up hardcoded paths, `.gitignore` and the README)
