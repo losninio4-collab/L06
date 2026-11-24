@@ -112,3 +112,4 @@ used the claude.ai connectors, not this server.
 19. push to git
 20. (Summary) Act as a strict Red Team Auditor and University Course Grader: audit the workspace, git history and GitHub repository, and grade them against the L06 rubric.
 21. do 3 and 4, then commit and push (meaning: commit mock tests with pytest; clean up hardcoded paths, `.gitignore` and the README)
+22. fill in reflection.md, then commit and push
