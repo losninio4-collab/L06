@@ -2,49 +2,53 @@
 
 ## What did we ask the agent?
 
-We asked Claude Code to build a Python MCP server, `gmail-calendar`, with FastMCP,
-uv and stdio. It had to expose exactly six tools, reuse last week's Google client
-and token from a private folder, never print or copy secrets, and have no tool
-that sends or deletes. We then asked it to test and register the server, publish
-it to a private GitHub repository, and audit the result.
+I asked Claude Code to build `gmail-calendar`, a Python MCP server using FastMCP,
+uv and stdio. I fixed the limits in the prompt: exactly six tools, Google files read
+from a folder named in `GOOGLE_PRIVATE_DIR`, no secrets copied or printed, no
+browser, and nothing that sends or deletes.
 
-We also asked for everyday tasks: reading tomorrow's calendar, writing a draft,
-adding events and coordinating a meeting. The full list is in `README.md`.
+After that I asked it to write `test_server.py`, register the server, push to a
+private GitHub repository and audit the result. I also tried everyday requests:
+tomorrow's calendar, an "L06 test" draft, a "Study group" event in a free hour, and
+acting as my meeting coordinator. All the prompts are in `README.md`.
 
 ## How did we check that the result is correct?
 
-- A real MCP client (`test_server.py`) started the server and saw exactly six tools.
-- 13 unit tests pass with Google mocked. They check, for example, that a draft is
-  never sent, events have no guests, and errors do not reveal details.
-- We searched the code for send, delete and modify calls and found none.
-- We checked tracked files and git history for secret files and known secret
-  formats before pushing, and compared the local and GitHub commits.
+- `test_server.py` starts the server as a real MCP client and compares the tool list
+  with the six I asked for. That part passes.
+- 13 pytest tests run with Google mocked. They check that a draft is never sent, an
+  event has no guests, and overlapping events are merged when finding free time.
+- Before each push, the tracked files were checked for secret filenames, and the
+  audits searched the whole git history for secret formats.
 
-**What we did not prove:** the private folder was empty, so the live `list_events`
-call failed (`token.json was not found`) and the server never ran against real
-Google data. The Gmail and Calendar tasks in the session ran through the claude.ai
-connectors instead. The "MCP works" event therefore does not show that our server
-works. Claude Code's "Connected" status only showed that the server starts.
+The live `list_events` call in `test_server.py` failed because `token.json` was not
+in the private folder, so I have not shown the server working with real Google data.
+The draft and the calendar events were made through the claude.ai connectors. This
+taught me that "Connected" and an event named "MCP works" are not proof: I have to
+check which tool did the work.
 
 ## Which tool did we leave out, and why?
 
-We left out sending email and deleting emails or events. Sending cannot be taken
-back, and a delete can lose data. The agent also reads email written by other
-people, which could contain malicious instructions. A draft lets a person check
-the text before anything leaves the account.
+I left out `send_email` and `delete_event`. A sent email cannot be taken back and a
+deleted event may be lost, so I want a human to make those decisions. The agent also
+reads emails from other people, and an email could contain text that tries to give it
+instructions. With drafts only, the worst result is a bad draft that I can throw away.
 
-We learned that this protects only our server. In the same session, the claude.ai
-connectors sent the "L06 test" email and deleted the "Study group" event when we
-asked. The token scopes also allow more than our tools do. Real protection means
-limiting the other connected tools and the permissions too.
+This protects only my server. When I asked Claude to send the draft and delete
+"Study group", it did both through the claude.ai connectors. The token scopes are
+also wider than my six tools. To really block these actions I would have to turn off
+those connectors as well.
 
 ## L05 vs L06: what changed?
 
-From L05 we reused the Google client and `token.json` sign-in, by design.
-In L06 we put Gmail and Calendar behind an MCP server: named tools with
-descriptions that an MCP client can discover and call, instead of code tied to one
-program. The server also sets the boundary: it holds the credentials, exposes six
-chosen actions, and hides secrets and raw Google errors from the agent.
-
-The new lesson was to check which tool actually did the work, because several
-connected tools can give the same answer.
+- **Services:** in L05 I worked with a basic, single-service workflow. In L06 the
+  server covers two Google APIs, Gmail and Calendar, using one OAuth2 sign-in.
+- **Who defines the tools:** in L06 I chose the tool names, inputs and descriptions
+  myself, and any MCP client can discover them over stdio.
+- **Secrets:** the client file and token are meant to stay in `C:\my-private`, outside
+  the repository. The code gets the folder from an environment variable and refreshes
+  the access token only in memory.
+- **Running it:** uv manages Python and the packages, and `uv.lock` pins the versions.
+- **Combining apps:** the goal was a chain from email to calendar to draft. When I
+  tried it with the connectors, it found no meeting request, so it correctly stopped
+  without creating an event or a draft. I have not completed the full chain yet.
