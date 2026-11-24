@@ -41,14 +41,25 @@ those connectors as well.
 
 ## L05 vs L06: what changed?
 
-- **Services:** in L05 I worked with a basic, single-service workflow. In L06 the
-  server covers two Google APIs, Gmail and Calendar, using one OAuth2 sign-in.
-- **Who defines the tools:** in L06 I chose the tool names, inputs and descriptions
-  myself, and any MCP client can discover them over stdio.
-- **Secrets:** the client file and token are meant to stay in `C:\my-private`, outside
-  the repository. The code gets the folder from an environment variable and refreshes
-  the access token only in memory.
-- **Running it:** uv manages Python and the packages, and `uv.lock` pins the versions.
-- **Combining apps:** the goal was a chain from email to calendar to draft. When I
-  tried it with the connectors, it found no meeting request, so it correctly stopped
-  without creating an event or a draft. I have not completed the full chain yet.
+Both labs use Gmail and Calendar. What changed is how they are used.
+
+- **Script or server:** L05 is one script, `main.py`. Each run creates a fixed test
+  draft addressed to the signed-in account and a fixed 30-minute event 4 hours later,
+  then exits. L06 is an MCP server over stdio that an agent can call when needed.
+- **Who decides:** in L05 the subject, text and event title are written in the code.
+  In L06 the agent chooses a tool and its inputs from the descriptions.
+- **Reading:** L05 reads no mail or events (only the account address). L06 can also
+  search and read email, list events and find free slots.
+- **Sign-in:** L05 can open a browser (`run_local_server`) and saves `token.json`.
+  L06 never opens a browser, never writes the token, and refreshes it in memory.
+- **Private folder:** L05 has `C:\my-private` in the code. L06 reads the folder from
+  `GOOGLE_PRIVATE_DIR`. Both keep the Google files outside the project.
+- **Scopes:** the L05 script asks for `gmail.modify` and full `calendar`. If L06 reuses
+  that token, it has more permission than my six tools need, so the limit is in my
+  code and not in the token.
+- **Time zone:** L05 uses the computer's zone. L06 always uses Asia/Jerusalem.
+- **Tests:** the L05 folder has no tests. L06 has 13 mocked tests and a live test,
+  which has not passed yet because the Google files were not in the private folder.
+- **Combining apps:** L05 made a draft and an event that were not connected. In L06 I
+  tried a chain from email to calendar to draft, using the connectors. It found no
+  meeting request and stopped without creating anything, so the chain is not proven.

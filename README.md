@@ -137,3 +137,29 @@ used the claude.ai connectors, not this server.
 22. fill in reflection.md, then commit and push
 23. run the audit again and give me the new grade
 24. add the missing prompts to README, commit and push
+25. run the audit again and give me the new grade
+26. The final-steps prompt (the live test failed: the private folder was empty):
+
+    ```text
+    I placed token.json and client_secret*.json into C:\my-private. Complete these final steps to bring this submission to 100/100:
+
+    1. **Live Verification:** Run `uv run python test_server.py` (or the test suite) against the real Google credentials in `C:\my-private` and confirm that all tests pass without errors.
+    2. **Upgrade `reflection.md`:** Rewrite `reflection.md` in natural, authentic student voice (first-person "I") so it does not look like an AI template. Specifically:
+       - Expand **"L05 vs L06: what changed?"** with concrete technical differences: in L05 we connected to a single local/basic MCP toolset or mock/single-service workflow, whereas in L06 we built a custom multi-service FastMCP server bridging two external OAuth2 Google APIs (Gmail + Google Calendar) with `uv`, isolated credentials outside the git repo in `C:\my-private`, and chained cross-app workflows (email -> calendar -> draft).
+       - Keep the other three sections sharp, specific to our actual prompts and verification checks (`test_server.py`, Gmail Drafts, Google Calendar UI), and clear on why `send_email` and `delete_event` were deliberately excluded (human-in-the-loop safety against irreversible actions).
+    3. **Final Security & Git Hygiene:** Verify `git status` and `git diff` to confirm ZERO secrets (`token.json`, `client_secret*.json`, `.env`) are tracked. Commit the updated `reflection.md` with a clean message (e.g., `"Update reflection.md with detailed L05 vs L06 comparison"`) and push to GitHub (`git push`).
+    4. **Grader Access:** Check `gh api repos/{owner}/L06/collaborators` and invite the course grader if not already invited (or give me the exact 1-line command/link if username is needed).
+    5. **Final Grade Check:** Run one last Red Team check and confirm the final score.
+    ```
+
+27. The search-and-copy prompt (no real Google files were found, so none were copied):
+
+    ```text
+    Search my user folder (`$HOME`) for existing `token.json` and `client_secret*.json` files from L05, and copy them into `C:\my-private` (do NOT copy them into `L06`).
+
+    Once copied:
+    1. Run `uv run python test_server.py` to verify the live test passes against real Google data.
+    2. Add the missing prompts to `README.md` so the prompt list is 100% complete.
+    3. Inspect my local `L05` folder (if it exists in `~/AI-Course/L05`) so the "L05 vs L06" section in `reflection.md` is 100% grounded in what I actually built in L05 rather than assumed.
+    4. Commit and push the final updates to GitHub (after verifying `git status` shows zero secret files).
+    ```
